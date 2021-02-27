@@ -108,19 +108,12 @@ def write_map(window, state, lat, lon, deg):
     rows, cols = stdscr.getmaxyx()
     viewbox = calc_viewbox(lat, lon, deg)
     window.addstr(int(rows/2), int(cols/2), "o")
-
+    window.addstr(int(rows/2), 2, str(int(viewbox[0])) + " KM")
+    window.addstr(int(rows-2), int(cols/2), str(int(viewbox[1])) + " KM")
     for i in range(rows-1):
-        if i == int(rows/2):
-            window.addstr(i, 2, str(int(viewbox[0])) + " KM")
-            window.addstr(i, 0, ".")
-        else:
-            window.addstr(i, 0, ".")
+        window.addstr(i, 0, ".")
     for i in range(cols-1):
-        if i == int(cols/2):
-            window.addstr(int(rows-2), i, str(int(viewbox[1])) + " KM")
-            window.addstr(int(rows-1), i, ".")
-        else:
-            window.addstr(int(rows-1), i, ".")
+        window.addstr(int(rows-1), i, ".")
 
     for ent in state:
         x = conv_linear((check(lat, deg)), (-abs(rows), 0), float(ent["lat"]))
