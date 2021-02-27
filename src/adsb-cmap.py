@@ -7,7 +7,7 @@ import time
 import sys
 
 
-def getarg():
+def get_arg():
     """Get args from the CLI"""
     parser = argparse.ArgumentParser()
     parser.add_argument('--lat',
@@ -18,23 +18,23 @@ def getarg():
                         type=float,
                         help='current longitude',
                         dest='lon')
-    parser.add_argument('--url',
-                        type=str,
-                        help='dump1090 address',
-                        dest='url')
     parser.add_argument('--range',
                         type=float,
                         help='range in degrees',
-                        dest='degrees')
+                        dest='deg')
     args = parser.parse_args()
     return args
 
 
-def getstate(url):
-    """Get latest data.json from net-mode Dump1090"""
-    with urllib.request.urlopen("http://localhost:8080/data.json") as source:
-        data = json.loads(source.read().decode())
-        return data
+def get_state():
+    """Get latest data.json from local net-mode Dump1090"""
+    try:
+        with urllib.request.urlopen("http://localhost:8080/data.json") as path:
+            data = json.loads(path.read().decode())
+            return data
+    except urllib.error.URLError:
+        print("Error: source unavailable.")
+        exit_gracefully()
 
 
 def start_window():
@@ -46,24 +46,34 @@ def start_window():
     return window, stdscr
 
 
-def maprange(a, b, s):
-    """Generic function for mapping a range"""
+def scale_pos(a, b, s):
+    """Generic function for scaling coordinates"""
     (a1, a2), (b1, b2) = a, b
     return b1 + ((s - a1) * (b2 - b1) / (a2 - a1))
 
 
-def write_map(window, state, lat, lon, degrees):
+def check(x, deg):
+    """Verify and return the requested viewing range"""
+    return x-deg, x+deg
+
+
+def exit_gracefully():
+    """Revert curses settings before exiting"""
+    curses.nocbreak()
+    curses.echo()
+    curses.endwin()
+    sys.exit()
+
+
+def write_map(window, state, lat, lon, deg):
     """Write to screen an ASCII map based on the latest JSON data"""
     rows, cols = stdscr.getmaxyx()
-    row = maprange((lat-degrees, lat+degrees), (-abs(rows), 0), lat)
-    col = maprange((lon-degrees, lon+degrees), (0, cols), lon)
-    window.addstr(abs(int(row)), int(col), "o")
-
-    for entry in state:
-        row = maprange((lat-degrees, lat+degrees), (-abs(rows), 0), float(entry["lat"]))
-        col = maprange((lon-degrees, lon+degrees), (0, cols), float(entry["lon"]))
-        window.addstr(abs(int(row)),
-                      int(col),
+    window.addstr(int(rows/2), int(cols/2), "o")
+    for ent in state:
+        x = scale_pos((check(lat, deg)), (-abs(rows), 0), float(ent["lat"]))
+        y = scale_pos((check(lon, deg)), (0, cols), float(ent["lon"]))
+        window.addstr(abs(int(x)),
+                      int(y),
                       "x")
 
 
@@ -73,20 +83,17 @@ def update_window(state, window, args):
     if curses.is_term_resized:
         rows, cols = stdscr.getmaxyx()
         window.resize(rows, cols)
-    write_map(window, state, args.lat, args.lon, args.degrees)
+    write_map(window, state, args.lat, args.lon, args.deg)
     window.refresh()
 
 
 if __name__ == '__main__':
     window, stdscr = start_window()
-    args = getarg()
+    args = get_arg()
     while True:
         try:
-            state = (getstate(args.url))
+            state = (get_state())
             update_window(state, window, args)
-            time.sleep(0.1)
+            time.sleep(0.05)
         except KeyboardInterrupt:
-            curses.nocbreak()
-            curses.echo()
-            curses.endwin()
-            sys.exit()
+            exit_gracefully()
