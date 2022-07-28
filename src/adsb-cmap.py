@@ -53,6 +53,7 @@ def start_window():
     curses.curs_set(0)
     rows, cols = stdscr.getmaxyx()
     window = curses.newwin(rows, cols, 0, 0)
+    window.nodelay(True)
     return window, stdscr
 
 
@@ -153,7 +154,6 @@ def write_map(window, state, lat, lon, deg):
 if __name__ == "__main__":
     args = get_arg()
     window, stdscr = start_window()
-    window.nodelay(True)
     while True:
         try:
             if (ch := window.getch()) != -1:
