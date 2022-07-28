@@ -10,19 +10,27 @@ import math
 
 def get_arg():
     """Get args from the CLI"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--lat',
+    parser = argparse.ArgumentParser(description="Track planes with net-mode" +
+                                     " dump1090. Increase and decrease range" +
+                                     " with - and +. Quit with q.")
+    parser.add_argument("-x", "--lat",
                         type=float,
-                        help='current latitude',
-                        dest='lat')
-    parser.add_argument('--lon',
+                        help="latitude",
+                        dest="lat")
+    parser.add_argument("-y", "--lon",
                         type=float,
-                        help='current longitude',
-                        dest='lon')
-    parser.add_argument('--range',
+                        help="longitude",
+                        dest="lon")
+    parser.add_argument("-r", "--range",
                         type=float,
-                        help='range in degrees',
-                        dest='deg')
+                        help="range in degrees, default = 0.2",
+                        default=0.2,
+                        dest="deg")
+    parser.add_argument("-u", "--url",
+                        type=str,
+                        help="server-hosted dump1090 .json",
+                        default="http://localhost:8080/data.json",
+                        dest="url")
     args = parser.parse_args()
     return args
 
