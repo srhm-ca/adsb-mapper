@@ -38,7 +38,7 @@ def get_arg():
 def get_state():
     """Get latest data.json from local net-mode Dump1090"""
     try:
-        with urllib.request.urlopen("http://localhost:8080/data.json") as path:
+        with urllib.request.urlopen(args.url) as path:
             data = json.loads(path.read().decode())
             return data
     except urllib.error.URLError:
@@ -74,19 +74,19 @@ def conv_linear(a, b, s):
 
 def conv_lat(lat):
     """Convert a given latitude into kilometres"""
-    return abs(lat)*110.574
+    return abs(lat) * 110.574
 
 
 def conv_lon(lat, lon):
     """Convert a given longitude into kilometres"""
-    return (abs(lon))*(111.320*math.cos(math.radians(lat)))
+    return (abs(lon)) * (111.320 * math.cos(math.radians(lat)))
 
 
 def calc_distance(lat, lon, lat1, lon1):
     """Calculate the distance between two points in kilometres"""
-    x = abs(conv_lat(lat)-conv_lat(lat1))
+    x = abs(conv_lat(lat) - conv_lat(lat1))
     y = abs(conv_lon(lat, lon) - conv_lon(lat1, lon1))
-    return ((y**2) + (x**2))**0.5
+    return ((y ** 2) + (x ** 2)) ** 0.5
 
 
 def calc_viewbox(lat, lon, deg):
@@ -99,7 +99,7 @@ def calc_viewbox(lat, lon, deg):
 
 def check(x, deg):
     """Verify and return the requested viewing range"""
-    return x-deg, x+deg
+    return x - deg, x + deg
 
 
 def exit_gracefully():
