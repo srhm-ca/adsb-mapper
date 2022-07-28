@@ -115,36 +115,45 @@ def write_map(window, state, lat, lon, deg):
     """Write to screen an ASCII map based on the latest JSON data"""
     rows, cols = stdscr.getmaxyx()
     viewbox = calc_viewbox(lat, lon, deg)
-    window.addstr(int(rows/2), int(cols/2), "o")
-    window.addstr(int(rows/2), 2, str(int(viewbox[0])) + " KM")
-    window.addstr(int(rows-2), int(cols/2), str(int(viewbox[1])) + " KM")
-    for i in range(rows-1):
+    planes = "planes" if len(state) > 1 else "plane"
+    window.addstr(int(rows / 2), int(cols / 2), "o")
+    window.addstr(int(rows / 2), 2, str(int(viewbox[0])) + " KM")
+    window.addstr(int(rows - 2), int(cols / 2), str(int(viewbox[1])) + " KM")
+    window.addstr(int(rows - 2), int(cols-20), str(len(state)) + f" {planes} detected")
+    for i in range(rows - 1):
         window.addstr(i, 0, ".")
-    for i in range(cols-1):
-        window.addstr(int(rows-1), i, ".")
+    for i in range(cols - 1):
+        window.addstr(int(rows - 1), i, ".")
 
     for ent in state:
-        x = conv_linear((check(lat, deg)), (-abs(rows), 0), float(ent["lat"]))
-        y = conv_linear((check(lon, deg)), (0, cols), float(ent["lon"]))
-        window.addstr(abs(int(x)),
-                      int(y),
-                      "x")
-        window.addstr(abs(int(x-1)),
-                      int(y),
-                      str(ent["flight"]))
-        window.addstr(abs(int(x-2)),
-                      int(y),
-                      str(int(calc_distance(float(ent["lat"]),
-                                            float(ent["lon"]),
-                                            lat, lon))) + " KM")
+        try:
+            x = conv_linear((check(lat, deg)), (-abs(rows), 0), float(ent["lat"]))
+            y = conv_linear((check(lon, deg)), (0, cols), float(ent["lon"]))
+            window.addstr(abs(int(x)), int(y), "x")
+            window.addstr(abs(int(x - 1)), int(y), str(ent["flight"]))
+            window.addstr(
+                abs(int(x - 2)),
+                int(y),
+                str(int(calc_distance(float(ent["lat"]), float(ent["lon"]), lat, lon)))
+                + " KM")
+        except curses.error:
+            pass
 
 
-if __name__ == '__main__':
-    window, stdscr = start_window()
+if __name__ == "__main__":
     args = get_arg()
+    window, stdscr = start_window()
+    window.nodelay(True)
     while True:
         try:
-            state = (get_state())
+            if (ch := window.getch()) != -1:
+                if ch in [113, 81]:
+                    exit_gracefully()
+                elif ch == 45 and args.deg > 0.2:
+                    args.deg -= 0.1
+                elif ch == 43:
+                    args.deg += 0.1
+            state = get_state()
             update_window(state, window, args)
             time.sleep(0.05)
         except KeyboardInterrupt:
