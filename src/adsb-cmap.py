@@ -149,9 +149,9 @@ if __name__ == "__main__":
             if (ch := window.getch()) != -1:
                 if ch in [113, 81]:
                     exit_gracefully()
-                elif ch == 45 and args.deg > 0.2:
+                elif ch == 45:
                     args.deg += 0.1
-                elif ch == 43:
+                elif ch == 43 and args.deg > 0.2:
                     args.deg -= 0.1
             state = get_state()
             update_window(state, window, args)
