@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import urllib.request
-import json
-import argparse
-import curses
-import time
 import sys
+import json
+import time
 import math
+import curses
+import argparse
+import urllib.request
 
 
 def get_arg():
@@ -115,11 +115,15 @@ def write_map(window, state, lat, lon, deg):
     """Write to screen an ASCII map based on the latest JSON data"""
     rows, cols = stdscr.getmaxyx()
     viewbox = calc_viewbox(lat, lon, deg)
-    planes = "planes" if len(state) > 1 else "plane"
-    window.addstr(int(rows / 2), int(cols / 2), "o")
-    window.addstr(int(rows / 2), 2, str(int(viewbox[0])) + " KM")
-    window.addstr(int(rows - 2), int(cols / 2), str(int(viewbox[1])) + " KM")
-    window.addstr(int(rows - 2), int(cols-20), str(len(state)) + f" {planes} detected")
+    planes = "plane" if len(state) == 1 else "planes"
+    window.addstr(int(rows / 2),
+                  int(cols / 2), "o")
+    window.addstr(int(rows / 2), 2,
+                  str(int(viewbox[0])) + " KM")
+    window.addstr(int(rows - 2), int(cols / 2),
+                  str(int(viewbox[1])) + " KM")
+    window.addstr(int(rows - 2), int(cols-20),
+                  str(len(state)) + f" {planes} detected")
     for i in range(rows - 1):
         window.addstr(i, 0, ".")
     for i in range(cols - 1):
@@ -127,14 +131,20 @@ def write_map(window, state, lat, lon, deg):
 
     for ent in state:
         try:
-            x = conv_linear((check(lat, deg)), (-abs(rows), 0), float(ent["lat"]))
-            y = conv_linear((check(lon, deg)), (0, cols), float(ent["lon"]))
-            window.addstr(abs(int(x)), int(y), "x")
-            window.addstr(abs(int(x - 1)), int(y), str(ent["flight"]))
+            x = conv_linear((check(lat, deg)),
+                            (-abs(rows), 0), float(ent["lat"]))
+            y = conv_linear((check(lon, deg)),
+                            (0, cols), float(ent["lon"]))
+            window.addstr(abs(int(x)), int(y),
+                          "x")
+            window.addstr(abs(int(x - 1)), int(y),
+                          str(ent["flight"]))
             window.addstr(
                 abs(int(x - 2)),
                 int(y),
-                str(int(calc_distance(float(ent["lat"]), float(ent["lon"]), lat, lon)))
+                str(int(calc_distance(float(ent["lat"]),
+                                      float(ent["lon"]),
+                                      lat, lon)))
                 + " KM")
         except curses.error:
             pass
