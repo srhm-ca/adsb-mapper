@@ -162,13 +162,11 @@ def write_map(window, state, lat, lon, deg):
                           "x")
             window.addstr(abs(int(x - 1)), int(y),
                           str(ent["flight"]))
-            window.addstr(
-                abs(int(x - 2)),
-                int(y),
-                str(int(calc_distance(float(ent["lat"]),
-                                      float(ent["lon"]),
-                                      lat, lon)))
-                + " KM")
+            window.addstr(abs(int(x - 2)), int(y),
+                          str(int(calc_distance(float(ent["lat"]),
+                                                float(ent["lon"]),
+                                                lat, lon)))
+                          + " KM")
         except curses.error:
             pass
 
