@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+import os
 import sys
 import json
 import time
 import math
 import curses
 import argparse
+import subprocess
 import urllib.request
 
 
@@ -12,7 +14,10 @@ def get_arg():
     """Get args from the CLI"""
     parser = argparse.ArgumentParser(description="Track planes with net-mode" +
                                      " dump1090. Increase and decrease range" +
-                                     " with - and +. Quit with q.")
+                                     " with - and +. Quit with q. adsb-cmap" +
+                                     " can start dump1090, pass executable" +
+                                     " path with -d, otherwise pass the" +
+                                     " .json url with --url.")
     parser.add_argument("-x", "--lat",
                         type=float,
                         help="latitude",
@@ -31,6 +36,14 @@ def get_arg():
                         help="server-hosted dump1090 .json",
                         default="http://localhost:8080/data.json",
                         dest="url")
+    parser.add_argument("-d", "--dump1090",
+                        type=str,
+                        help="path to dump1090 binary",
+                        dest="dumpbin")
+    parser.add_argument("-n", "--nolog",
+                        help="delete log file",
+                        action='store_false',
+                        dest='log')
     args = parser.parse_args()
     return args
 
@@ -110,6 +123,11 @@ def exit_gracefully():
     curses.echo()
     curses.endwin()
     curses.curs_set(1)
+    if args.dumpbin:
+        print("Killing dump1090")
+        process.kill()
+        if not args.log:
+            subprocess.run(f"rm {t}.log", shell=True)
     sys.exit()
 
 
@@ -118,18 +136,21 @@ def write_map(window, state, lat, lon, deg):
     rows, cols = stdscr.getmaxyx()
     viewbox = calc_viewbox(lat, lon, deg)
     planes = "plane" if len(state) == 1 else "planes"
-    window.addstr(int(rows / 2),
-                  int(cols / 2), "o")
-    window.addstr(int(rows / 2), 2,
-                  str(int(viewbox[0])) + " KM")
-    window.addstr(int(rows - 2), int(cols / 2),
-                  str(int(viewbox[1])) + " KM")
-    window.addstr(int(rows - 2), int(cols-20),
-                  str(len(state)) + f" {planes} detected")
-    for i in range(rows - 1):
-        window.addstr(i, 0, ".")
-    for i in range(cols - 1):
-        window.addstr(int(rows - 1), i, ".")
+    try:
+        window.addstr(int(rows / 2),
+                      int(cols / 2), "o")
+        window.addstr(int(rows / 2), 2,
+                      str(int(viewbox[0])) + " KM")
+        window.addstr(int(rows - 2), int(cols / 2),
+                      str(int(viewbox[1])) + " KM")
+        window.addstr(int(rows - 2), int(cols-20),
+                      str(len(state)) + f" {planes} detected")
+        for i in range(rows - 1):
+            window.addstr(i, 0, ".")
+        for i in range(cols - 1):
+            window.addstr(int(rows - 1), i, ".")
+    except curses.error:
+        pass
 
     for ent in state:
         try:
@@ -154,6 +175,16 @@ def write_map(window, state, lat, lon, deg):
 
 if __name__ == "__main__":
     args = get_arg()
+    if args.dumpbin:
+        print("Starting dump1090")
+        t = time.time()
+        process = subprocess.Popen(f"{args.dumpbin} --net --aggressive",
+                                   shell=True,
+                                   stdout=open(f"{t}.log", "w"),
+                                   close_fds=True)
+        while True:
+            if os.stat(f"{t}.log").st_size > 10:
+                break
     window, stdscr = start_window()
     while True:
         try:
