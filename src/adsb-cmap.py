@@ -51,6 +51,7 @@ def start_window():
     stdscr = curses.initscr()
     curses.cbreak()
     curses.curs_set(0)
+    curses.echo(False)
     rows, cols = stdscr.getmaxyx()
     window = curses.newwin(rows, cols, 0, 0)
     window.nodelay(True)
