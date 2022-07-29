@@ -49,7 +49,7 @@ def get_arg():
 
 
 def get_state():
-    """Get latest data.json from local net-mode Dump1090"""
+    """Get latest data.json from net-mode dump1090"""
     try:
         with urllib.request.urlopen(args.url) as path:
             data = json.loads(path.read().decode())
@@ -60,7 +60,7 @@ def get_state():
 
 
 def start_window():
-    """Initialize curses instance and return window"""
+    """Initialize curses and return window object"""
     stdscr = curses.initscr()
     curses.cbreak()
     curses.curs_set(0)
@@ -113,7 +113,7 @@ def calc_viewbox(lat, lon, deg):
 
 
 def check(x, deg):
-    """Verify and return the requested viewing range"""
+    """Verify and return viewing range"""
     return x - deg, x + deg
 
 
@@ -132,7 +132,7 @@ def exit_gracefully():
 
 
 def write_map(window, state, lat, lon, deg):
-    """Write to screen an ASCII map based on the latest JSON data"""
+    """Write map to screen given latest dump1090 data"""
     rows, cols = stdscr.getmaxyx()
     viewbox = calc_viewbox(lat, lon, deg)
     planes = "plane" if len(state) == 1 else "planes"
