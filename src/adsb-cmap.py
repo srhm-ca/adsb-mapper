@@ -15,7 +15,8 @@ def get_arg():
     parser = argparse.ArgumentParser(description="Track planes with net-mode" +
                                      " dump1090. Increase and decrease range" +
                                      " with - and +. Quit with q. adsb-cmap" +
-                                     " can start dump1090, pass executable" +
+                                     " can start dump109 by passing" +
+                                     " the dump1090 executable"
                                      " path with -d, otherwise pass the" +
                                      " .json url with --url.")
     parser.add_argument("-x", "--lat",
