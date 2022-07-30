@@ -44,6 +44,10 @@ def get_arg():
                         help="delete log file",
                         action='store_false',
                         dest='log')
+    parser.add_argument("-s", "--square",
+                        help="force square aspect ratio",
+                        action="store_true",
+                        dest='square')
     args = parser.parse_args()
     return args
 
@@ -134,6 +138,11 @@ def exit_gracefully():
 def write_map(window, state, lat, lon, deg):
     """Write map to screen given latest dump1090 data"""
     rows, cols = stdscr.getmaxyx()
+    if args.square:
+        if cols > rows:
+            cols = rows
+        else:
+            rows = cols
     viewbox = calc_viewbox(lat, lon, deg)
     planes = "plane" if len(state) == 1 else "planes"
     try:
@@ -180,6 +189,7 @@ if __name__ == "__main__":
                                    shell=True,
                                    stdout=open(f"{t}.log", "w"),
                                    close_fds=True)
+        print("Waiting for dump1090")
         while True:
             if os.stat(f"{t}.log").st_size > 10:
                 break
